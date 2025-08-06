@@ -109,6 +109,21 @@ impl PickerDelegate for ProjectSymbolsDelegate {
         "Search project symbols...".into()
     }
 
+    fn render_editor(
+        &self,
+        editor: &Entity<Editor>,
+        _window: &mut Window,
+        _cx: &mut Context<Picker<Self>>,
+    ) -> Div {
+        let project_symbol_settings = ProjectSymbolsSettings::get_global(cx);
+        let modal_max_width = Self::modal_max_width(project_symbol_settings.modal_max_width, window);
+        let modal_max_height = Self::modal_max_height(project_symbol_settings.modal_max_height, window);
+
+        Super::render_editor(editor, _window, _cx)
+            .w(modal_max_width)
+            .h(modal_max_height)
+    }
+
     fn confirm(&mut self, secondary: bool, window: &mut Window, cx: &mut Context<Picker<Self>>) {
         if let Some(symbol) = self
             .matches
@@ -266,6 +281,32 @@ impl PickerDelegate for ProjectSymbolsDelegate {
                         .child(Label::new(path).color(Color::Muted)),
                 ),
         )
+    }
+
+    pub fn modal_max_width(width_setting: Option<ProjectSymbolsSize>, window: &mut Window) -> Pixels {
+        let window_width = window.viewport_size().width;
+        let small_width = Pixels(545.);
+
+        match width_setting {
+            None | Some(ProjectSymbolsSize::Small) => small_width,
+            Some(ProjectSymbolsSize::Full) => window_width,
+            Some(ProjectSymbolsSize::XLarge) => (window_width - Pixels(512.)).max(small_width),
+            Some(ProjectSymbolsSize::Large) => (window_width - Pixels(768.)).max(small_width),
+            Some(ProjectSymbolsSize::Medium) => (window_width - Pixels(1024.)).max(small_width),
+        }
+    }
+
+    pub fn modal_max_height(height_setting: Option<ProjectSymbolsSize>, window: &mut Window) -> Pixels {
+        let window_height = window.viewport_size().height;
+        let small_height = Pixels(545.);
+
+        match width_setting {
+            None | Some(ProjectSymbolsSize::Small) => small_height,
+            Some(ProjectSymbolsSize::Full) => window_height,
+            Some(ProjectSymbolsSize::XLarge) => (window_height - Pixels(512.)).max(small_height),
+            Some(ProjectSymbolsSize::Large) => (window_height - Pixels(768.)).max(small_height),
+            Some(ProjectSymbolsSize::Medium) => (window_height - Pixels(1024.)).max(small_height),
+        }
     }
 }
 
